@@ -3,7 +3,7 @@
 ## 🚨 The Situation
 
 You asked an AI to build a simple "Number Guessing Game" using Streamlit.
-It wrote the code, ran away, and now the game is unplayable. 
+It wrote the code, ran away, and now the game is unplayable.
 
 - You can't win.
 - The hints lie to you.
@@ -12,7 +12,7 @@ It wrote the code, ran away, and now the game is unplayable.
 ## 🛠️ Setup
 
 1. Install dependencies: `pip install -r requirements.txt`
-2. Run the broken app: `python -m streamlit run app.py`
+2. Run the fixed app: `python -m streamlit run app.py`
 
 ## 🕵️‍♂️ Your Mission
 
@@ -25,9 +25,19 @@ It wrote the code, ran away, and now the game is unplayable.
 
 ## 📝 Document Your Experience
 
-- [ ] Describe the game's purpose.
-- [ ] Detail which bugs you found.
-- [ ] Explain what fixes you applied.
+- [x] **Purpose:** A number guessing game where the player tries to guess a secret number within a limited number of attempts. The difficulty setting changes the number range (Easy: 1–20, Normal: 1–100, Hard: 1–200).
+- [x] **Bugs found:**
+  - Inverted hints — "Too High" showed "Go HIGHER!" and vice versa
+  - Secret number was cast to a string on even attempts, breaking numeric comparison
+  - Hard difficulty range (1–50) was easier than Normal (1–100)
+  - Initial attempt counter started at 1 instead of 0
+  - Info banner hardcoded "1 and 100" regardless of difficulty
+- [x] **Fixes applied:**
+  - Corrected hint direction in `check_guess`
+  - Removed the string/int type flip from `app.py`
+  - Changed Hard range to 1–200
+  - Moved all logic functions from `app.py` into `logic_utils.py`
+  - Fixed initial attempts and dynamic range display
 
 ## 📸 Demo
 
