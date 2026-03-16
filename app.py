@@ -51,7 +51,7 @@ if "status" not in st.session_state:
     st.session_state.status = "playing"
 
 if "history" not in st.session_state:
-    st.session_state.history = []
+    st.session_state.history = []  # each item: {"guess": int|str, "outcome": str}
 
 st.subheader("Make a guess")
 
@@ -60,6 +60,11 @@ st.info(
     f"Guess a number between {low} and {high}. "
     f"Attempts left: {attempt_limit - st.session_state.attempts}"
 )
+
+# CHALLENGE 4: Attempts progress bar
+attempts_used = st.session_state.attempts
+progress_fraction = attempts_used / attempt_limit
+st.progress(progress_fraction, text=f"Attempts used: {attempts_used} / {attempt_limit}")
 
 with st.expander("Developer Debug Info"):
     st.write("Secret:", st.session_state.secret)
@@ -102,18 +107,32 @@ if submit:
     ok, guess_int, err = parse_guess(raw_guess)
 
     if not ok:
-        st.session_state.history.append(raw_guess)
+        st.session_state.history.append({"guess": raw_guess, "outcome": "Error"})
         st.error(err)
     else:
-        st.session_state.history.append(guess_int)
-
         # FIX: Removed string/int type flip — on even attempts the secret was cast
         # to a string, making numeric comparison unreliable (e.g. "9" > "10" in
         # lexicographic order). Now always compare int to int.
         outcome = check_guess(guess_int, st.session_state.secret)
+        st.session_state.history.append({"guess": guess_int, "outcome": outcome})
         message = OUTCOME_MESSAGES.get(outcome, "")
 
-        if show_hint:
+        # CHALLENGE 4: Temperature hint based on distance
+        if show_hint and outcome != "Win":
+            distance = abs(guess_int - st.session_state.secret)
+            span = high - low
+            if distance <= span * 0.05:
+                temp = "🔥 Burning hot!"
+            elif distance <= span * 0.15:
+                temp = "♨️ Very warm!"
+            elif distance <= span * 0.30:
+                temp = "🌤️ Warm"
+            elif distance <= span * 0.50:
+                temp = "❄️ Cold"
+            else:
+                temp = "🧊 Freezing cold"
+            st.warning(f"{message}  |  {temp}")
+        elif show_hint:
             st.warning(message)
 
         st.session_state.score = update_score(
@@ -137,6 +156,20 @@ if submit:
                     f"The secret was {st.session_state.secret}. "
                     f"Score: {st.session_state.score}"
                 )
+
+# CHALLENGE 4: Colored guess history
+if st.session_state.history:
+    st.divider()
+    st.subheader("Guess History")
+    outcome_icons = {
+        "Win": "✅",
+        "Too High": "🔺 Too High",
+        "Too Low": "🔻 Too Low",
+        "Error": "⚠️ Invalid",
+    }
+    for i, entry in enumerate(st.session_state.history, 1):
+        icon = outcome_icons.get(entry["outcome"], "❓")
+        st.write(f"**#{i}** — `{entry['guess']}` → {icon}")
 
 st.divider()
 st.caption("Built by an AI that claims this code is production-ready.")
